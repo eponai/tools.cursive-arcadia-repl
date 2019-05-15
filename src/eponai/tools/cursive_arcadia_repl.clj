@@ -1,4 +1,4 @@
-(ns redskap.cursive.arcadia-nrepl
+(ns eponai.tools.cursive-arcadia-repl
   (:gen-class)
   (:require
     [clojure.tools.cli :as cli]
@@ -26,29 +26,30 @@
   "Returns true if expr is sent by Cursive."
   [expr]
   (and (string? expr)
+    ;; TODO Handle as input? (e.g. file or cli)
     (re-find #"cursive.repl.runtime" expr)))
 
 
 (defn arcadia-nrepl-eval
-  [handler {:keys [transport session] :as msg}]
+  [handler {:keys [transport session id] :as msg}]
   (let [code   (or (:code msg) (:file msg))
         client (nrepl/client *nrepl-conn* 1000)]
     (if (from-cursive? code)
       (handler msg)
-      (let [id-id      (:id msg)
-            msg        (select-keys msg [:id :op :code :file :file-name :file-path])
-            res        (nrepl/message client msg)
-
+      ;; TODO Figure out which keys should be selected.
+      (let [message    (select-keys msg [:id :op :code :file :file-name :file-path])
+            responses  (nrepl/message client message)
             session-id (if (instance? clojure.lang.AReference session)
                          (-> session meta :id)
                          session)]
 
-        (doseq [r res]
-          (transport/send transport (cond-> r
-                                      (some? session-id)
-                                      (assoc :session session-id)
-                                      (some? id-id)
-                                      (assoc :id id-id))))))))
+        (doseq [response responses]
+          (transport/send transport
+            (cond-> response
+              (some? session-id)
+              (assoc :session session-id)
+              (some? id)
+              (assoc :id id))))))))
 
 
 (defn wrap-arcadia-repl
