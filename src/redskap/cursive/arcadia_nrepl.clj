@@ -1,4 +1,4 @@
-(ns arcadia.nrepl
+(ns redskap.cursive.arcadia-nrepl
   (:gen-class)
   (:require
     [clojure.tools.cli :as cli]
@@ -23,7 +23,7 @@
 
 
 (defn from-cursive?
-  "Returns true if expr is loaded by Cursive."
+  "Returns true if expr is sent by Cursive."
   [expr]
   (and (string? expr)
     (re-find #"cursive.repl.runtime" expr)))
