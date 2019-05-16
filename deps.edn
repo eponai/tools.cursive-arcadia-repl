@@ -1,0 +1,8 @@
+{:deps
+ {org.clojure/clojure   {:mvn/version "1.10.0"}
+  nrepl                 {:mvn/version "0.6.0"}
+  org.clojure/tools.cli {:mvn/version "0.4.2"}}
+ :aliases
+ {:repl
+  {:main-opts ["-m" "eponai.tools.cursive-arcadia-repl"]}}
+ }
