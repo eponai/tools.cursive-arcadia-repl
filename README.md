@@ -27,7 +27,7 @@ Having installed the prerequisites, follow these steps to setup a Cursive->Arcad
     touch deps.edn
     ```
 
-3. In the project's `deps.edn`, add `Assets/Arcadia` sources and add this library as a dependency:
+3. Add Arcadia sources and this library to the project's `deps.edn`:
 
     ```clj
     {:deps
