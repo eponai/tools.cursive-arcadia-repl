@@ -44,7 +44,7 @@ Having installed the prerequisites, follow these steps to setup a Cursive->Arcad
 
 5. In Intellij/Cursive, open and import the `Assets/<project-name>` directory.
 
-6. Create a [remote REPL in Cursive](https://cursive-ide.com/userguide/repl.html#Remote_REPLs) on port `7888`.
+6. Create a [remote REPL in Cursive](https://cursive-ide.com/userguide/repl.html#remote-repls) on port `7888`.
 
 Forms typed into the remote REPL should be evaluated in Unity!
 
