@@ -8,8 +8,8 @@ are not redirected but evaluated in the bridge as they require the JVM.
 
 ## Prerequisites
 
-* Install [Clojure with tools.deps](https://clojure.org/guides/getting_started)
-* Install [Intellij](https://www.jetbrains.com/idea/download/) with [Cursive](https://cursive-ide.com)
+* Install [Clojure CLI](https://clojure.org/guides/getting_started) (`brew install clojure` on Mac)
+* Install [Intellij](https://www.jetbrains.com/idea/download/) and [Cursive](https://cursive-ide.com)
 * [Setup an Arcadia project](https://github.com/arcadia-unity/Arcadia/wiki/Getting-Started)
 
 ## How to use Cursive with Arcadia
@@ -20,29 +20,27 @@ Having installed the prerequisites, follow these steps to setup a Cursive->Arcad
 
 2. Start the nREPL bridge provided by this library on default port `7888`.
 
-  ```sh
-git clone git@github.com:eponai/tools.cursive-arcadia-repl.git
-cd tools.cursive-arcadia-repl
-clj -A:repl
-# Alternatively with leiningen:
-# lein run
-```
+    ```sh
+    git clone git@github.com:eponai/tools.cursive-arcadia-repl.git
+    cd tools.cursive-arcadia-repl
+    clj -A:repl
+    ```
 
 3. Create a new clojure project with a deps.edn file in your Unity project. For example:
 
-  ```sh
-cd <your-unity-project>/Assets
-mkdir <project-name> && cd <project-name>
-mkdir src test target
-touch deps.edn
-```
+    ```sh
+    cd <your-unity-project>/Assets
+    mkdir <project-name> && cd <project-name>
+    mkdir src test target
+    touch deps.edn
+    ```
 
 4. Add the `Assets/Arcadia` directory to your `deps.edn` as a dependency:
 
-  ```clj
-{:deps {org.clojure/clojure {:mvn/version "1.10.0"}
-        arcadia             {:local/root "../Arcadia"}}}
-```
+    ```clj
+    {:deps {org.clojure/clojure {:mvn/version "1.10.0"}
+            arcadia             {:local/root "../Arcadia"}}}
+    ```
 
 5. In Intellij/Cursive, open and import the `Assets/<project-name>` directory.
 
