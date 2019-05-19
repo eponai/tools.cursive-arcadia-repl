@@ -26,7 +26,13 @@ Having installed the prerequisites, follow these steps to setup a Cursive->Arcad
     clj -A:repl
     ```
 
-3. Create a new clojure project with a deps.edn file in your Unity project. For example:
+3. Add a `deps.edn` file in `Assets/Arcadia` with the following content:
+
+    ```clj
+    {:paths ["Source"]}
+    ```
+
+4. Create a new clojure project with a deps.edn file in your Unity project. For example:
 
     ```sh
     cd <your-unity-project>/Assets
@@ -35,16 +41,16 @@ Having installed the prerequisites, follow these steps to setup a Cursive->Arcad
     touch deps.edn
     ```
 
-4. Add the `Assets/Arcadia` directory to your `deps.edn` as a dependency:
+5. Add the `Assets/Arcadia` directory to your `deps.edn` as a dependency:
 
     ```clj
     {:deps {org.clojure/clojure {:mvn/version "1.10.0"}
             arcadia             {:local/root "../Arcadia"}}}
     ```
 
-5. In Intellij/Cursive, open and import the `Assets/<project-name>` directory.
+6. In Intellij/Cursive, open and import the `Assets/<project-name>` directory.
 
-6. Create a [remote REPL in Cursive](https://cursive-ide.com/userguide/repl.html#remote-repls) on port `7888`.
+7. Create a [remote REPL in Cursive](https://cursive-ide.com/userguide/repl.html#remote-repls) on port `7888`.
 
 Forms typed into the remote REPL should be evaluated in Unity!
 
