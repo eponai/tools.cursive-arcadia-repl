@@ -40,7 +40,7 @@ Having installed the prerequisites, follow these steps to setup a Cursive->Arcad
        {eponai/tools.cursive-arcadia-repl {:git/url "https://github.com/eponai/tools.cursive-arcadia-repl"
                                            :sha     "c303076d7d725787e1524d59d010a45c47355890"}}
        :main-opts
-        ["-m" "eponai.tools.cursive-arcadia-repl"]}}}
+       ["-m" "eponai.tools.cursive-arcadia-repl"]}}}
     ```
 
 4. In Intellij/Cursive, open and import the `Assets/<project-name>` directory.
