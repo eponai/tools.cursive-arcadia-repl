@@ -6,36 +6,70 @@ are not redirected but evaluated in the bridge as they require the JVM.
 [nREPL]: https://github.com/clojure/tools.nrepl
 [Arcadia Unity]: https://github.com/arcadia-unity/Arcadia
 
-### How to use Cursive with Arcadia
+## Prerequisites
 
-In your Unity project with Arcadia, do:
+* Install [Clojure with tools.deps](https://clojure.org/guides/getting_started)
+* Install [Intellij](https://www.jetbrains.com/idea/download/) with [Cursive](https://cursive-ide.com)
+* [Setup an Arcadia project](https://github.com/arcadia-unity/Arcadia/wiki/Getting-Started)
 
-1. Create a new "regular" looking clojure project that has a deps.edn at its root. For example:
+## How to use Cursive with Arcadia
+
+Having installed the prerequisites, follow these steps to setup a Cursive->Arcadia REPL.
+
+1. Open your Unity project and verify that Arcadia is running. You should see the message "Arcadia Started!" in Unity's console.
+
+2. Start the nREPL bridge provided by this library on default port `7888`.
 
   ```sh
-cd Assets
-mkdir <project-name>
-cd <project-name>
-mkdir src test target
-echo '{:deps {org.clojure/clojure {:mvn/version "1.10.0"}
-              arcadia             {:local/root "../Arcadia"}}}' > deps.edn
+git clone git@github.com:eponai/tools.cursive-arcadia-repl.git
+cd tools.cursive-arcadia-repl
+clj -A:repl
+# Alternatively with leiningen:
+# lein run
 ```
 
-2. Open and import the project with Cursive at that root.
-3. You should now have auto complete with the arcadia and clojure-clr sources.
+3. Create a new clojure project with a deps.edn file in your Unity project. For example:
 
-Now we'll want to talk to Arcadia via nREPL. To do this:
+  ```sh
+cd <your-unity-project>/Assets
+mkdir <project-name> && cd <project-name>
+mkdir src test target
+touch deps.edn
+```
 
-1. Clone this repository: git@github.com:eponai/tools.cursive-arcadia-repl.git
-2. cd tools.cursive-arcadia-repl
-3. Either run `lein run` or `clj -A:repl`
+4. Add the `Assets/Arcadia` directory to your `deps.edn` as a dependency:
 
-An nREPL bridge has now been created on the default port 7888. Create a remote REPL in Cursive with this port.
+  ```clj
+{:deps {org.clojure/clojure {:mvn/version "1.10.0"}
+        arcadia             {:local/root "../Arcadia"}}}
+```
 
-When that's all set up:
+5. In Intellij/Cursive, open and import the `Assets/<project-name>` directory.
 
-* Add `(:require [arcadia.core :as arc])` to one of your clojure files.
-* Load the file and send `(arc/log "hi!")` to the remote REPL.
-* You should see `"hi!"` being printed in Unity's console!
+6. Create a [remote REPL in Cursive](https://cursive-ide.com/userguide/repl.html#Remote_REPLs) on port `7888`.
 
-Now you can start developing your game!
+Forms typed into the remote REPL should be evaluated in Unity!
+
+### Testing the setup
+
+Here's some code you can use to test whether it's working correctly:
+
+```clj
+(ns <project>.core
+  (:require
+    [arcadia.core :as arc]
+    [clojure.clr.io :as io]))
+
+(comment
+  ;; Send this form to the remote REPL (default key binding cmd+shift+p)
+  (arc/log "Hi unity!")
+
+  ;; You should see this message being printed in Unity's console!
+
+  ;; Testing Clojure CLR code
+  (io/as-file "some.file")
+  ;; => #object[FileInfo 0xe64d6600 "some.file"]
+  )
+```
+
+And you're done!
