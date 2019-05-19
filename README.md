@@ -29,18 +29,19 @@ Having installed the prerequisites, follow these steps to setup a Cursive->Arcad
 
 3. In the project's `deps.edn`, add `Assets/Arcadia` sources and add this library as a dependency:
 
-{:deps
- {org.clojure/clojure {:mvn/version "1.10.0"}}
- :aliases
- {:dev
-  {:extra-deps
-   {arcadia {:local/root "../Arcadia/Source"}}}
-  :arcadia-repl
-  {:extra-deps
-   {eponai/tools.cursive-arcadia-repl {:git/url "https://github.com/eponai/tools.cursive-arcadia-repl"
-                                       :sha     "c303076d7d725787e1524d59d010a45c47355890"}}
-   :main-opts
-   ["-m" "eponai.tools.cursive-arcadia-repl"]}}}
+    ```clj
+    {:deps
+     {org.clojure/clojure {:mvn/version "1.10.0"}}
+     :aliases
+     {:dev
+      {:extra-paths ["../Arcadia/Source"]}
+      :arcadia-repl
+      {:extra-deps
+       {eponai/tools.cursive-arcadia-repl {:git/url "https://github.com/eponai/tools.cursive-arcadia-repl"
+                                           :sha     "c303076d7d725787e1524d59d010a45c47355890"}}
+       :main-opts
+        ["-m" "eponai.tools.cursive-arcadia-repl"]}}}
+    ```
 
 4. In Intellij/Cursive, open and import the `Assets/<project-name>` directory.
 
