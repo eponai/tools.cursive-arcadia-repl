@@ -18,7 +18,7 @@ Having installed the prerequisites, follow these steps to setup a Cursive->Arcad
 
 1. Open your Unity project and verify that Arcadia is running. You should see the message "Arcadia Started!" in Unity's console.
 
-2. Create a new clojure project with a deps.edn file in your Unity project. For example:
+2. Create a new clojure project with a `deps.edn` file in your Unity project. For example:
 
     ```sh
     cd <your-unity-project>/Assets
@@ -27,7 +27,7 @@ Having installed the prerequisites, follow these steps to setup a Cursive->Arcad
     touch deps.edn
     ```
 
-3. In the project's `deps.edn` add `Assets/Arcadia` and this library (tools.cursive-arcadia-repl) as a dependency:
+3. In the project's `deps.edn`, add `Assets/Arcadia` sources and add this library as a dependency:
 
 {:deps
  {org.clojure/clojure {:mvn/version "1.10.0"}}
