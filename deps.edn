@@ -4,5 +4,4 @@
   org.clojure/tools.cli {:mvn/version "0.4.2"}}
  :aliases
  {:repl
-  {:main-opts ["-m" "eponai.tools.cursive-arcadia-repl"]}}
- }
+  {:main-opts ["-m" "eponai.tools.cursive-arcadia-repl"]}}}

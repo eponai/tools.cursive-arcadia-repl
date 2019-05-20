@@ -5,10 +5,13 @@
     [nrepl.server :as server]
     [nrepl.transport :as transport]
     [nrepl.middleware :refer [set-descriptor!]]
-    [nrepl.core :as nrepl]))
+    [nrepl.core :as nrepl])
+  (:import [java.net SocketException]))
 
 
-(def ^:dynamic *nrepl-conn* "Transport for connection to Arcadia's nREPL." nil)
+(def ^:dynamic *arcadia-conn* "Transport for connection to Arcadia's nREPL." nil)
+
+(def ^:dynamic *arcadia-port* "Transport for connection to Arcadia's nREPL." nil)
 
 
 (def cli-opts
@@ -30,33 +33,51 @@
     (re-find #"cursive.repl.runtime" expr)))
 
 
+(defn connect! []
+  (alter-var-root #'*arcadia-conn*
+    (fn [_] (nrepl/connect :port *arcadia-port*))))
+
+
 (defn arcadia-nrepl-eval
   [handler {:keys [transport session id] :as msg}]
   (let [code   (or (:code msg) (:file msg))
-        client (nrepl/client *nrepl-conn* 1000)]
+        client (nrepl/client *arcadia-conn* 1000)]
     (if (from-cursive? code)
       (handler msg)
       ;; TODO Figure out which keys should be selected.
-      (let [message    (select-keys msg [:id :op :code :file :file-name :file-path])
-            responses  (nrepl/message client message)
-            session-id (if (instance? clojure.lang.AReference session)
-                         (-> session meta :id)
-                         session)]
+      (try
+        (let [message    (select-keys msg [:id :op :code :file :file-name :file-path])
+              responses  (nrepl/message client message)
+              session-id (if (instance? clojure.lang.AReference session)
+                           (-> session meta :id)
+                           session)]
 
-        (doseq [response responses]
-          (transport/send transport
-            (cond-> response
-              (some? session-id)
-              (assoc :session session-id)
-              (some? id)
-              (assoc :id id))))))))
+          (doseq [response responses]
+            (transport/send transport
+              (cond-> response
+                (some? session-id)
+                (assoc :session session-id)
+                (some? id)
+                (assoc :id id)))))))))
+
+
+(defn arcadia-eval [handler msg]
+  (try
+    (arcadia-nrepl-eval handler msg)
+    (catch SocketException e
+      (print "Arcadia connection lost, reconnecting...")
+      (connect!)
+      (println "Done!")
+      (if (> 5 (:attempts msg 0))
+        (arcadia-eval handler (update msg :attempts (fnil inc 0)))
+        (handler msg)))))
 
 
 (defn wrap-arcadia-repl
   [handler]
   (fn [{:keys [op] :as msg}]
     (case op
-      ("eval" "load-file") (arcadia-nrepl-eval handler msg)
+      ("eval" "load-file") (arcadia-eval handler msg)
       (handler msg))))
 
 
@@ -70,13 +91,13 @@
   [& args]
   (let [{:keys [arcadia-port port]} (:options (cli/parse-opts args cli-opts))]
     (print (format "Connecting to Arcadia on port %d... " arcadia-port))
-    (with-open [conn (nrepl/connect :port arcadia-port)]
+    (binding [*arcadia-port* arcadia-port]
+      (connect!)
       (println "Done!")
-      (binding [*nrepl-conn* conn]
-        (print (format "Starting nREPL server on port %d... " port))
-        (server/start-server
-          :port port
-          :handler (server/default-handler #'wrap-arcadia-repl))
-        (println "Done!")
-        (loop [] (read-line) (recur))))))
+      (print (format "Starting nREPL server on port %d... " port))
+      (server/start-server
+        :port port
+        :handler (server/default-handler #'wrap-arcadia-repl))
+      (println "Done!")
+      (loop [] (read-line) (recur)))))
 
