@@ -11,7 +11,7 @@
 
 (def ^:dynamic *arcadia-conn* "Transport for connection to Arcadia's nREPL." nil)
 
-(def ^:dynamic *arcadia-port* "Transport for connection to Arcadia's nREPL." nil)
+(def ^:dynamic *arcadia-port* "Arcadia's nREPL port." nil)
 
 
 (def cli-opts
@@ -38,7 +38,7 @@
     (fn [_] (nrepl/connect :port *arcadia-port*))))
 
 
-(defn arcadia-nrepl-eval
+(defn arcadia-handle-message
   [handler {:keys [transport session id] :as msg}]
   (let [code   (or (:code msg) (:file msg))
         client (nrepl/client *arcadia-conn* 1000)]
@@ -61,15 +61,15 @@
                 (assoc :id id)))))))))
 
 
-(defn arcadia-eval [handler msg]
+(defn arcadia-nrepl-eval [handler msg]
   (try
-    (arcadia-nrepl-eval handler msg)
+    (arcadia-handle-message handler msg)
     (catch SocketException e
       (print "Arcadia connection lost, reconnecting...")
       (connect!)
       (println "Done!")
       (if (> 5 (:attempts msg 0))
-        (arcadia-eval handler (update msg :attempts (fnil inc 0)))
+        (arcadia-nrepl-eval handler (update msg :attempts (fnil inc 0)))
         (handler msg)))))
 
 
@@ -77,7 +77,7 @@
   [handler]
   (fn [{:keys [op] :as msg}]
     (case op
-      ("eval" "load-file") (arcadia-eval handler msg)
+      ("eval" "load-file") (arcadia-nrepl-eval handler msg)
       (handler msg))))
 
 
