@@ -45,20 +45,19 @@
     (if (from-cursive? code)
       (handler msg)
       ;; TODO Figure out which keys should be selected.
-      (try
-        (let [message    (select-keys msg [:id :op :code :file :file-name :file-path])
-              responses  (nrepl/message client message)
-              session-id (if (instance? clojure.lang.AReference session)
-                           (-> session meta :id)
-                           session)]
+      (let [message    (select-keys msg [:id :op :code :file :file-name :file-path])
+            responses  (nrepl/message client message)
+            session-id (if (instance? clojure.lang.AReference session)
+                         (-> session meta :id)
+                         session)]
 
-          (doseq [response responses]
-            (transport/send transport
-              (cond-> response
-                (some? session-id)
-                (assoc :session session-id)
-                (some? id)
-                (assoc :id id)))))))))
+        (doseq [response responses]
+          (transport/send transport
+            (cond-> response
+              (some? session-id)
+              (assoc :session session-id)
+              (some? id)
+              (assoc :id id))))))))
 
 
 (defn arcadia-nrepl-eval [handler msg]
