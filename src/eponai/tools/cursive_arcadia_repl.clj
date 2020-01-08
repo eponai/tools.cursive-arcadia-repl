@@ -38,7 +38,7 @@
     (fn [_] (nrepl/connect :port *arcadia-port*))))
 
 
-(defn arcadia-handle-message
+(defn arcadia-eval
   [handler {:keys [transport session id] :as msg}]
   (let [code   (or (:code msg) (:file msg))
         client (nrepl/client *arcadia-conn* 1000)]
@@ -60,23 +60,21 @@
               (assoc :id id))))))))
 
 
-(defn arcadia-nrepl-eval [handler msg]
+(defn try-arcadia-eval [handler msg]
   (try
-    (arcadia-handle-message handler msg)
+    (arcadia-eval handler msg)
     (catch SocketException e
       (print "Arcadia connection lost, reconnecting...")
       (connect!)
       (println "Done!")
-      (if (> 5 (:attempts msg 0))
-        (arcadia-nrepl-eval handler (update msg :attempts (fnil inc 0)))
-        (handler msg)))))
+      (handler msg))))
 
 
 (defn wrap-arcadia-repl
   [handler]
   (fn [{:keys [op] :as msg}]
     (case op
-      ("eval" "load-file") (arcadia-nrepl-eval handler msg)
+      ("eval" "load-file") (try-arcadia-eval handler msg)
       (handler msg))))
 
 
@@ -99,4 +97,3 @@
         :handler (server/default-handler #'wrap-arcadia-repl))
       (println "Done!")
       (loop [] (read-line) (recur)))))
-
