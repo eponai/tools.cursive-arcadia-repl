@@ -5,10 +5,13 @@
     [nrepl.server :as server]
     [nrepl.transport :as transport]
     [nrepl.middleware :refer [set-descriptor!]]
-    [nrepl.core :as nrepl]))
+    [nrepl.core :as nrepl])
+  (:import [java.net SocketException]))
 
 
-(def ^:dynamic *nrepl-conn* "Transport for connection to Arcadia's nREPL." nil)
+(def ^:dynamic *arcadia-conn* "Transport for connection to Arcadia's nREPL." nil)
+
+(def ^:dynamic *arcadia-port* "Arcadia's nREPL port." nil)
 
 
 (def cli-opts
@@ -30,10 +33,15 @@
     (re-find #"cursive.repl.runtime" expr)))
 
 
-(defn arcadia-nrepl-eval
+(defn connect! []
+  (alter-var-root #'*arcadia-conn*
+    (fn [_] (nrepl/connect :port *arcadia-port*))))
+
+
+(defn arcadia-eval
   [handler {:keys [transport session id] :as msg}]
   (let [code   (or (:code msg) (:file msg))
-        client (nrepl/client *nrepl-conn* 1000)]
+        client (nrepl/client *arcadia-conn* 1000)]
     (if (from-cursive? code)
       (handler msg)
       ;; TODO Figure out which keys should be selected.
@@ -52,11 +60,21 @@
               (assoc :id id))))))))
 
 
+(defn try-arcadia-eval [handler msg]
+  (try
+    (arcadia-eval handler msg)
+    (catch SocketException e
+      (print "Arcadia connection lost, reconnecting...")
+      (connect!)
+      (println "Done!")
+      (handler msg))))
+
+
 (defn wrap-arcadia-repl
   [handler]
   (fn [{:keys [op] :as msg}]
     (case op
-      ("eval" "load-file") (arcadia-nrepl-eval handler msg)
+      ("eval" "load-file") (try-arcadia-eval handler msg)
       (handler msg))))
 
 
@@ -70,13 +88,12 @@
   [& args]
   (let [{:keys [arcadia-port port]} (:options (cli/parse-opts args cli-opts))]
     (print (format "Connecting to Arcadia on port %d... " arcadia-port))
-    (with-open [conn (nrepl/connect :port arcadia-port)]
+    (binding [*arcadia-port* arcadia-port]
+      (connect!)
       (println "Done!")
-      (binding [*nrepl-conn* conn]
-        (print (format "Starting nREPL server on port %d... " port))
-        (server/start-server
-          :port port
-          :handler (server/default-handler #'wrap-arcadia-repl))
-        (println "Done!")
-        (loop [] (read-line) (recur))))))
-
+      (print (format "Starting nREPL server on port %d... " port))
+      (server/start-server
+        :port port
+        :handler (server/default-handler #'wrap-arcadia-repl))
+      (println "Done!")
+      (loop [] (read-line) (recur)))))
